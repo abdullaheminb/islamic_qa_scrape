@@ -46,8 +46,9 @@ category_urls_list = [
     {"page_count":34,"link":"https://sorularlaislamiyet.com/kategoriler/fikih/helaleller-haramlar"},
     {"page_count":21,"link":"https://sorularlaislamiyet.com/kategoriler/fikih/kadin"},
     {"page_count":6,"link":"https://sorularlaislamiyet.com/kategoriler/fikih/ictihad"},
-    {"page_count":14,"link":"https://sorularlaislamiyet.com/kategoriler/fikih/evlilik-nikah"}
-    {"page_count":12,"link":"https://sorularlaislamiyet.com/kategoriler/fikih/abdest-gusul-teyemmum"},    {"page_count":2,"link":"https://sorularlaislamiyet.com/kategoriler/fikih/miras"},
+    {"page_count":14,"link":"https://sorularlaislamiyet.com/kategoriler/fikih/evlilik-nikah"},
+    {"page_count":12,"link":"https://sorularlaislamiyet.com/kategoriler/fikih/abdest-gusul-teyemmum"},    
+    {"page_count":2,"link":"https://sorularlaislamiyet.com/kategoriler/fikih/miras"},
     {"page_count":8,"link":"https://sorularlaislamiyet.com/kategoriler/fikih/kul-hakki"},
     {"page_count":4,"link":"https://sorularlaislamiyet.com/kategoriler/fikih/bosanma-talak"},
     {"page_count":5,"link":"https://sorularlaislamiyet.com/kategoriler/fikih/eglence-oyun"},
@@ -90,7 +91,6 @@ def get_content(url):
     # Fetch the webpage content
     response = requests.get(url)
     if response.status_code != 200:
-        print(f"Failed to retrieve the webpage. Status code: {response.status_code}")
         unable_to_read.append(url)
         question = "Failed to retrieve"
         answer = "Failed to retrieve"
@@ -117,10 +117,8 @@ def get_content(url):
             answer = data['articleBody']
             unable_to_read = []
             if question != None and answer != None:
-                print(url)
                 return question, answer
             else:
-                print("none item")
                 unable_to_read.append(url)
                 question = "Unable to get"
                 answer = "Unable to get"
@@ -141,7 +139,6 @@ def fetch_links_from_page(base_url,page_num):
     # Fetch the webpage content
     response = requests.get(url)
     if response.status_code != 200:
-        print(f"Failed to retrieve page {page_num}. Status code: {response.status_code}")
         return []
 
     # Parse the HTML content
@@ -175,12 +172,25 @@ def cat_crawler(cat_url, cat_page_count):
 def main():
     global category_urls_list, unable_to_read
     all_links = []
+    crawled_cat_counter = 1
+    print("crawling categories to retrieve links.")
     for cat in category_urls_list:
         for item in cat_crawler(cat["link"],cat["page_count"]-1):
             all_links.append(item)
+        print(f"{crawled_cat_counter}/76 category crawled.")
+        crawled_cat_counter += 1
+    print("Added all categories to all_links list. Now starting to copy content.")
+    counter = 1
     for link in all_links:
+        if counter % 50 == 0:
+            print(f"{counter}th link added")
         que, ans = get_content(f"https://sorularlaislamiyet.com{link}")
-        print(f"Question: {que}  \n Answer: {ans}  \n")
+        # Open the file in write mode
+        with open('output.txt', 'a') as file:
+            # Write some content to the file
+            file.write(f"Question: {que}\n")
+            file.write(f"Answer: {ans}\n\n\n")
+        counter += 1
 
     print(f"Unable to read links are as follows:\n {unable_to_read} ")
 main()
